@@ -1,7 +1,6 @@
 import asyncdispatch, asynchttpserver
 import ws
-import strutils
-
+import strutils, json
 
 proc dispatch*(req: Request): Future[void] {.async, gcsafe.} =
   var userws: WebSocket
@@ -13,16 +12,19 @@ proc dispatch*(req: Request): Future[void] {.async, gcsafe.} =
 
       while userws.readyState == Open:
         let msg = await userws.receiveStrPacket()
+        let ci = msg.find(':') # colon index
+        let command = msg[0..^ci]
+        let data = parseJson msg[(ci+1)..msg.high]
 
-        if msg.startsWith "setFilePath":
+        case command:
+        of "setFilePath":
           discard
 
-        elif msg.startsWith "sendInput":
+        of "sendInput":
           discard
 
         else:
           discard "unacceptable input"
-
 
     except WebSocketError:
       echo "socket closed:"

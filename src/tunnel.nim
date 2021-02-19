@@ -1,3 +1,4 @@
+## terminals works in tunnel  :)
 import osproc, streams
 
 type
@@ -18,22 +19,19 @@ proc writeLine*(ti; line_of_code: string) =
 
 # --------------------------------------------------------
 
-proc newProcess(command: string, options: openArray[string]): Process {.inline.} =
+proc newProcess(command: string; options: openArray[string] = []): Process {.inline.} =
   startProcess(command, "", options, nil, {poUsePath, poInteractive})
 
 proc compileProgram*(nimFilePath: string): string =
-  const finalFileName = "final_gdb_ized.out"
+  const finalFileName = "finalizedApp.out"
 
-  let
-    p = newProcess("nim",
-      ["c", "--debugger:native", nimFilePath, "-o", finalFileName])
+  let p = newProcess("nim", ["c", nimFilePath, "-o", finalFileName])
 
   discard waitForExit p # TODO check for error
   finalFileName
 
-proc connect2nimgdb*(nimFilePath: string): TerminalInteractable =
-  let
-    p = newProcess("nim-gdb", [nimFilePath])
+proc connect2app*(runnableFilePath: string): TerminalInteractable =
+  let p = newProcess("./" & runnableFilePath)
 
   TerminalInteractable(
     process: p,
@@ -41,6 +39,5 @@ proc connect2nimgdb*(nimFilePath: string): TerminalInteractable =
     stdout: p.outputStream)
 
 
-# TODO 
-proc getVars: seq[string]=
+proc getVars: seq[string] =
   result

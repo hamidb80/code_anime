@@ -1,11 +1,13 @@
 ## terminals works in tunnel  :)
 import osproc, streams
+import threadpool
 
 type
   TerminalInteractable* = object
     process: Process
     stdin: Stream
     stdout: Stream
+    onStdout: proc(line: string): void
     # stderr: Stream
 
 using ti: TerminalInteractable
@@ -16,6 +18,13 @@ proc readLine*(ti): string =
 proc writeLine*(ti; line_of_code: string) =
   ti.stdin.writeLine line_of_code
   ti.stdin.flush
+
+proc `onStdout=`(ti; handler: proc(line: string): void) =
+  let wrapper = proc() =
+    while true:
+      handler ti.readLine
+
+  spawn wrapper()
 
 # --------------------------------------------------------
 
@@ -30,14 +39,10 @@ proc compileProgram*(nimFilePath: string): string =
   discard waitForExit p # TODO check for error
   finalFileName
 
-proc connect2app*(runnableFilePath: string): TerminalInteractable =
+proc runNimApp*(runnableFilePath: string): TerminalInteractable =
   let p = newProcess("./" & runnableFilePath)
 
   TerminalInteractable(
     process: p,
     stdin: p.inputStream,
     stdout: p.outputStream)
-
-
-proc getVars: seq[string] =
-  result

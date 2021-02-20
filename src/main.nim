@@ -1,9 +1,8 @@
-import asyncdispatch, asynchttpserver
+import asyncdispatch, asynchttpserver, ws
 import strutils, strformat
 import os
 
 import router
-
 
 proc main =
   let
@@ -12,7 +11,7 @@ proc main =
 
   echo fmt"is running on http://localhost:{port}/"
 
-  waitFor server.serve(Port(port), dispatch)
+  waitFor server.serve(Port(port), httpDispatch)
 
 if isMainModule:
   main()

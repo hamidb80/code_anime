@@ -1,8 +1,8 @@
-import strformat
+import strformat, os
 
-let nums = [1,5,4,8,9]
+let nums = [1, 5, 4, 8, 9]
 
-for i in 0 ..< nums.len:  
+for i in 0 ..< nums.len:
   let n = nums[i]
   #!show i indexof nums, n
 

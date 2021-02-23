@@ -1,44 +1,48 @@
 import asyncdispatch, asynchttpserver, ws
 import strutils
-import os, options
+import options, os
 
-import parser
-import tunnel
+import parser, tunnel
 
+const finalFileName* = "finalizedApp.out"
 var ti: Option[TerminalInteractable]
 
-type msgErrs = enum
-  invalid_input = "invalid input"
-  not_running = "no program is running"
+type
+  msgErrs = enum
+    invalid_input = "invalid input"
+    not_running = "no program is running"
 
-proc msgHandler*(msg: string): string {.inline, gcsafe.}=
+func unpackMsg(msg: string): tuple[command: string, data: string] =
   let ci = msg.find(':') # colon index
-  let command = msg[0..^ci]
-  let data = msg[(ci+1)..msg.high]
+  assert ci != -1
 
+  (msg[0..^ci], msg[(ci+1)..msg.high])
+
+
+proc msgHandler*(msg: string): string =
+  let parsedMsg = unpackMsg(msg)
+
+  result = "OK"
   template wsErr(err: string): string =
     "ERR::" & err
 
-  {.cast(gcsafe).}:
+  case parsedMsg.command:
+  of "setFilePath":
+    const outFilename = "./temp.nim"
+    writeFile(outFilename, replaceWithCustomCode readFile parsedMsg.data)
 
-    case command:
-    of "setFilePath":
-      const outFilename = "./temp.nim"
-      writeFile(outFilename, replaceWithCustomCode readFile data)
+    ti = some runNimApp compileNimProgram(finalFileName, outFilename)
 
-      ti = some runNimApp compileProgram outFilename
-      
-      result = "OK"
-
-    of "sendInput":
-      if isSome ti:
-        ti.get.writeLine data
-      else:
-        result = wsErr $not_running
-
+  of "sendInput":
+    if isSome ti:
+      ti.get.writeLine parsedMsg.data
     else:
-      result = wsErr $invalid_input
+      result = wsErr $not_running
 
+  else:
+    result = wsErr $invalid_input
+
+# ---------------------- dispachers ------------------------
 
 proc wsDispatch*(req: Request) {.async, gcsafe.} =
   try:

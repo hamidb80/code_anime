@@ -45,7 +45,7 @@ func replaceWithCustomCode*(nimFileContent: string): string =
       args_str = args_seq[0]
 
     else:
-      raise newException(ValueError, fmt"'{funcname}' does not defiend")
+      raise newException(ValueError, fmt"'{funcname}' has not defiend")
 
     fmt"{funcname} {args_str}"
 

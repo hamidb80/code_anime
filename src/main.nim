@@ -4,14 +4,15 @@ import os
 
 import router
 
+proc runWsServer*(p: int) =
+  let server = newAsyncHttpServer()
+  waitFor server.serve(p.Port, httpDispatch)
+
 proc main =
-  let
-    port = paramStr(1).parseInt
-    server = newAsyncHttpServer()
+  let port = paramStr(1).parseInt
 
   echo fmt"is running on http://localhost:{port}/"
-
-  waitFor server.serve(Port(port), httpDispatch)
+  runWsServer(port)
 
 if isMainModule:
   main()

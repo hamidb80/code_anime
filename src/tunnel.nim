@@ -1,5 +1,5 @@
 import osproc, streams
-import sugar
+import threadpool
 
 type
   TerminalInteractable* = object
@@ -18,15 +18,19 @@ proc writeLine*(ti; line_of_code: string) =
   ti.stdin.writeLine line_of_code
   ti.stdin.flush
 
-proc `onStdout=`*(ti; handler: (line: string) -> void) =
+proc outputLoopWrapper(ti; handler: proc(line: string)) =
   try:
     while true:
       handler ti.readLine
   except:
     discard
 
-proc terminate*(ti; ) =
+proc `onStdout=`*(ti; handler: proc(line: string)) =
+  spawn outputLoopWrapper(ti, handler)
+
+proc terminate*(ti) =
   ti.process.terminate
+
 # --------------------------------------------------------
 
 proc newProcess*(command: string; options: openArray[string] = []): Process {.inline.} =

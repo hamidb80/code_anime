@@ -3,7 +3,7 @@ import re, strutils
 
 import parser
 
-proc remove_empty_lines(content:string): string=
+proc remove_empty_lines(content: string): string =
   for line in content.splitLines:
     if not(line =~ re"\s+\n"):
       result.add line

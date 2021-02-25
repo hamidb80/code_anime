@@ -12,17 +12,18 @@ type
     invalid_input = "invalid input"
     not_running = "no program is running"
 
+
 func unpackMsg(msg: string): tuple[command: string, data: string] =
   let ci = msg.find(':') # colon index
   assert ci != -1
 
-  (msg[0..^ci], msg[(ci+1)..msg.high])
+  (msg[0..<ci], msg[(ci+1)..msg.high])
 
 
 proc msgHandler*(msg: string): string =
   let parsedMsg = unpackMsg(msg)
-
   result = "OK"
+
   template wsErr(err: string): string =
     "ERR::" & err
 
@@ -46,7 +47,7 @@ proc msgHandler*(msg: string): string =
 
 proc wsDispatch*(req: Request) {.async, gcsafe.} =
   try:
-    let userws = await newWebSocket(req)
+    let userws = await newWebSocket req
 
     while userws.readyState == Open:
       let msg = await userws.receiveStrPacket()

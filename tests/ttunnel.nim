@@ -25,7 +25,7 @@ suite "tunnel":
 
   test "stdout event handler":
     runPython "./tests/scripts/loop.py"
-    
+
     var outs: seq[string]
     ti.onStdout = (s: string) => outs.add(s.strip)
 

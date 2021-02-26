@@ -6,28 +6,28 @@ import sugar
 import tunnel
 
 suite "tunnel":
-  var ti: TerminalInteractable
+  var term: InteractableTerminal
 
   template runPython(filePath: string) =
-    ti = newTerminal("python3.8", [filePath])
+    term = newTerminal("python3.8", [filePath])
 
   setup:
     discard
   teardown:
-    ti.terminate
+    term.terminate
 
   test "simple i/o":
     runPython "./tests/scripts/ex.py"
-    check ti.readLine.strip == "enter your name:"
+    check term.readLine.strip == "enter your name:"
 
-    ti.writeLine "hamid"
-    check ti.readLine.strip == "hello hamid"
+    term.writeLine "hamid"
+    check term.readLine.strip == "hello hamid"
 
   test "stdout event handler":
     runPython "./tests/scripts/loop.py"
 
     var outs: seq[string]
-    ti.onStdout = (s: string) => outs.add(s.strip)
+    term.onStdout = (s: string) => outs.add(s.strip)
 
     sleep 500
     check outs == @["0", "1", "2", "3"]

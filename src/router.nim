@@ -1,21 +1,27 @@
-import asyncdispatch, asynchttpserver, ws
+import asyncdispatch, asynchttpserver
+import ws
 
-import actions, communication
+import actions
 
 proc wsDispatch(req: Request) {.async, gcsafe.} =
   try:
-    let userws = await newWebSocket req
+    var clientWs = await newWebSocket req
 
-    while userws.readyState == Open:
-      let msg = await userws.receiveStrPacket()  
-      var resp: string
+    var
+      thrws: Thread[ptr WebSocket]
+      thrterm: Thread[void]
+    createThread thrws, websocket_channel_wrapper, addr clientWs
+    createThread thrterm, terminal_websocket_bridge
+
+    while clientWs.readyState == Open:
+      let msg = await clientWs.receiveStrPacket()
+      
+      if msg == "": continue
+
       try:
-        ch.msgHandler msg
-        resp = "OK"
+        msgHandler msg
       except:
-        resp = "ERROR"
-
-      await userws.send resp
+        await clientWs.send "ERROR" & $msg.len
 
   except WebSocketError:
     echo "Socket Closed"
@@ -26,6 +32,6 @@ proc httpDispatch*(req: Request): Future[void] {.async, gcsafe.} =
 
   elif req.url.path == "/":
     await req.respond(Http200, "Welcome")
-    
+
   else:
     await req.respond(Http404, "Not Found")

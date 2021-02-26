@@ -1,4 +1,4 @@
-import asyncdispatch, asynchttpserver, ws
+import asyncdispatch, asynchttpserver
 import strutils, strformat
 import os
 

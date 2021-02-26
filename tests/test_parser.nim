@@ -18,10 +18,10 @@ suite "parser":
 
   test "evalArgs::show":
     check evalArgs("show", @["name", "i"]) == "\"name:\",name,\"i:\",i"
-    
+
   test "evalArgs::forget":
     check evalArgs("forget", @["name"]) == "\"name\""
-    
+
   test "for loop 1":
     let
       nimCode = replaceWithCustomCode readfile "./tests/examples/for_loop1.nim"

@@ -1,51 +1,54 @@
-import threadpool, options
-
+import asyncdispatch
+import options
+import ws
 import parser, tunnel, communication
 
-# type
-#   msgErrs = enum
-#     invalid_input = "invalid input"
-#     not_running = "no program is running"
 
-#   msgKinds = enum
-#     setFilePath = "setFilePath"
-#     sendInput = "sendInput"
-
-
-func unpackMsg(msg: string): Message {.inline.}=
+func unpackMsg(msg: string): Message {.inline.} =
   let ci = msg.find(':') # colon index
   assert ci != -1
 
   (msg[0..<ci], msg[(ci+1)..msg.high])
 
-proc msgHandler*(ch: var Channel[Message], msg: string) =
-  let (command, data) = unpackMsg(msg)
+proc msgHandler*(msg: string) =
+  let (command, data) = unpackMsg msg
 
   case command:
   of "setFilePath":
     const outFilename = "./temp.nim"
     writeFile(outFilename, replaceWithCustomCode readFile data)
-
-    ch.send (command, data)
+    # ch.send (command, data)
 
   of "sendInput":
-    ch.send (command, data)
+    # ch.send (command, data)
+    discard
+
+  termCh.send (command, data)
 
 const finalFileName* = "finalizedApp.out"
 
-proc terminalController(msg: Message){.thread.}=
-  var ti: Option[TerminalInteractable]
+proc websocket_channel_wrapper*(wsclient:ptr WebSocket){.thread.} =
+  while true:
+    let (_, data) = wsCh.recv
+    waitFor wsclient[].send data
+
+
+proc terminal_websocket_bridge*(){.thread.} =
+  var term: Option[InteractableTerminal]
 
   while true:
-    let msg = ch.recv
+    let (command, data) = termCh.recv
 
-    if msg.command == "setFilePath":
-      ti = some runNimApp compileNimProgram(msg.data, finalFileName)
-    
-    elif msg.command == "sendInput":
-      if isSome ti:
-        ti.get.writeLine msg.data
-        echo "ehys"
-    
+    case command:
+    of "setFilePath":
+      term = some runNimApp compileNimProgram(data, finalFileName)
+
+    of "sendInput":
+      if isSome term:
+        term.get.writeLine data
+
+    of "hey":
+      wsCh.send ("hello", data)
+
     else:
       discard

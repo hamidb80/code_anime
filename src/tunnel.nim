@@ -2,44 +2,44 @@ import osproc, streams
 import threadpool
 
 type
-  TerminalInteractable* = object
+  InteractableTerminal* = object
     process: Process
     stdin: Stream
     stdout: Stream
     # stderr: Stream
     onStdout: proc(line: string): void
 
-using ti: TerminalInteractable
+using term: InteractableTerminal
 
-proc readLine*(ti): string =
-  ti.stdout.readLine
+proc readLine*(term): string =
+  term.stdout.readLine
 
-proc writeLine*(ti; line_of_code: string) =
-  ti.stdin.writeLine line_of_code
-  ti.stdin.flush
+proc writeLine*(term; line_of_code: string) =
+  term.stdin.writeLine line_of_code
+  term.stdin.flush
 
-proc outputLoopWrapper(ti; handler: proc(line: string)) =
+proc outputLoopWrapper(term; handler: proc(line: string)) =
   try:
     while true:
-      handler ti.readLine
+      handler term.readLine
   except:
     discard
 
-proc `onStdout=`*(ti; handler: proc(line: string)) =
-  spawn outputLoopWrapper(ti, handler)
+proc `onStdout=`*(term; handler: proc(line: string)) =
+  spawn outputLoopWrapper(term, handler)
 
-proc terminate*(ti) =
-  ti.process.terminate
+proc terminate*(term) =
+  term.process.terminate
 
 # --------------------------------------------------------
 
 proc newProcess*(command: string; options: openArray[string] = []): Process {.inline.} =
   startProcess(command, "", options, nil, {poUsePath, poInteractive})
 
-proc newTerminal*(command: string; options: openArray[string] = []): TerminalInteractable =
+proc newTerminal*(command: string; options: openArray[string] = []): InteractableTerminal =
   let p = newProcess(command, options)
 
-  TerminalInteractable(
+  InteractableTerminal(
     process: p,
     stdin: p.inputStream,
     stdout: p.outputStream)
@@ -50,5 +50,5 @@ proc compileNimProgram*(nimFilePath: string; outputFilePath: string): string =
   discard waitForExit p # TODO check for error
   outputFilePath
 
-proc runNimApp*(runnableFilePath: string): TerminalInteractable {.inline.} =
+proc runNimApp*(runnableFilePath: string): InteractableTerminal {.inline.} =
   newTerminal("./" & runnableFilePath)

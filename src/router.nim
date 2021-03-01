@@ -1,5 +1,6 @@
-import asyncdispatch, asynchttpserver
-import ws
+import
+  asyncdispatch, asynchttpserver,
+  ws
 
 import actions
 
@@ -7,17 +8,10 @@ proc wsDispatch(req: Request) {.async, gcsafe.} =
   try:
     var clientWs = await newWebSocket req
 
-    var
-      thrws: Thread[ptr WebSocket]
-      thrterm: Thread[void]
-    createThread thrws, websocket_channel_wrapper, addr clientWs
-    createThread thrterm, terminal_websocket_bridge
-
     while clientWs.readyState == Open:
       let msg = await clientWs.receiveStrPacket()
-      
-      if msg == "": continue
 
+      if msg == "": continue
       try:
         msgHandler msg
       except:
@@ -25,6 +19,7 @@ proc wsDispatch(req: Request) {.async, gcsafe.} =
 
   except WebSocketError:
     echo "Socket Closed"
+
 
 proc httpDispatch*(req: Request): Future[void] {.async, gcsafe.} =
   if req.url.path == "/ws":

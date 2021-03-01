@@ -1,7 +1,10 @@
-import asyncdispatch
-import options
-import ws
-import parser, tunnel, communication
+import
+  asyncdispatch,
+  options
+
+import 
+  parser,
+  tunnel, communication
 
 
 func unpackMsg(msg: string): Message {.inline.} =
@@ -27,11 +30,14 @@ proc msgHandler*(msg: string) =
 
 const finalFileName* = "finalizedApp.out"
 
-proc websocket_channel_wrapper*(wsclient:ptr WebSocket){.thread.} =
+proc websocket_channel_wrapper*(){.async.} =
   while true:
-    let (_, data) = wsCh.recv
-    waitFor wsclient[].send data
-
+    let (ok, msg) = wsCh.tryRecv
+    
+    if ok:
+      echo msg
+    else:
+      await sleepAsync 0 # run immidiatly after last await
 
 proc terminal_websocket_bridge*(){.thread.} =
   var term: Option[InteractableTerminal]

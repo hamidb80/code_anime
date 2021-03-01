@@ -1,9 +1,10 @@
 type
-  Message* = tuple[
-    command: string, data: string]
+  Message* = tuple[command: string, data: string]
 
-var termCh*: Channel[Message]
-var wsCh*: Channel[Message]
+var 
+  termCh*: Channel[Message]
+  wsCh*: Channel[Message]
 
 termCh.open
 wsCh.open
+

@@ -1,14 +1,16 @@
-import asyncdispatch, asynchttpserver, threadpool
-import strutils, strformat
-import os
+import
+  asyncdispatch, asynchttpserver, threadpool,
+  strutils, strformat,
+  os
 
-import router, actions
+import router, communication
+
 
 proc runServer*(p: int) =
   let server = newAsyncHttpServer()
 
-  spawn terminal_websocket_bridge()
-  asyncCheck websocket_channel_wrapper()
+  spawn termChannel_handler()
+  asyncCheck wsChannel_handler()
   waitFor server.serve(p.Port, httpDispatch)
 
 proc main =

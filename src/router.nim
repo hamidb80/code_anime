@@ -1,21 +1,24 @@
 import
-  asyncdispatch, asynchttpserver,
-  ws
+  asyncdispatch, asynchttpserver, ws
 
-import actions
+import messages, communication
 
 proc wsDispatch(req: Request) {.async, gcsafe.} =
   try:
-    var clientWs = await newWebSocket req
+    let thisClient = await newWebSocket req
 
-    while clientWs.readyState == Open:
-      let msg = await clientWs.receiveStrPacket()
+    {.cast(gcsafe).}:
+      wsClients.add thisClient
 
-      if msg == "": continue
-      try:
-        msgHandler msg
-      except:
-        await clientWs.send "ERROR" & $msg.len
+      while thisClient.readyState == Open:
+        let msg = await thisClient.receiveStrPacket()
+
+        if msg == "": continue # ws handshake
+        
+        try:
+          msgHandler msg
+        except:
+          await thisClient.send "ERROR" & $msg.len
 
   except WebSocketError:
     echo "Socket Closed"

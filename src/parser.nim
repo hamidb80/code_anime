@@ -1,6 +1,5 @@
 import nre except toSeq
-import strformat, strutils
-import sequtils
+import strformat, strutils, sequtils
 
 const EchoSigniture = "::CODE_ANIME::"
 

@@ -15,16 +15,16 @@ using term: InteractableTerminal
 proc readLine*(term): string =
   term.stdout.readLine
 
-proc writeLine*(term; line_of_code: string) =
-  term.stdin.writeLine line_of_code
+proc writeLine*(term; line: string) =
+  term.stdin.writeLine line
   term.stdin.flush
 
 proc outputLoopWrapper(term; handler: proc(line: string)) =
   try:
     while true:
       handler term.readLine
-  except:
-    discard
+  
+  except: discard
 
 proc `onStdout=`*(term; handler: proc(line: string)) =
   spawn outputLoopWrapper(term, handler)
@@ -51,5 +51,5 @@ proc compileNimProgram*(nimFilePath: string; outputFilePath: string): string =
   discard waitForExit p # TODO check for error
   outputFilePath
 
-proc runNimApp*(runnableFilePath: string): InteractableTerminal {.inline.} =
+proc runApp*(runnableFilePath: string): InteractableTerminal {.inline.} =
   newTerminal("./" & runnableFilePath)

@@ -58,6 +58,15 @@ proc wsChannel_handler*(){.async.} =
 
     if ok: await sendToAll msg
 
+func unpackMsg(msg: string): Message {.inline.} =
+  let ci = msg.find ':' # colon index
+  assert ci != -1
+
+  (msg[0..<ci].strip, msg[(ci+1)..msg.high].strip)
+
+proc msgBridge*(msg: string) =
+  termCh.send(unpackMsg msg)
+
 proc termChannel_handler*(){.thread.} =
   var term: Option[InteractableTerminal]
 
@@ -73,7 +82,7 @@ proc termChannel_handler*(){.thread.} =
         wsCh.send ("hello", data)
 
       of $Mk.setFilePath:
-        term = some runNimApp compileNimProgram(data, finalFileName)
+        term = some runApp compileNimProgram(data, finalFileName)
         term.get.onStdout = proc(s: string) = wsCh.send ("stdout", s)
 
       of $Mk.runCommand:

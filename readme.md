@@ -1,6 +1,8 @@
 # Code Anime!
 convert your code into visual algorigthm
 
+## alert
+this project is under developments
 
 ## idea / algorithm:
 the idea is that, that we are going to read the code
@@ -48,5 +50,6 @@ up: correct - down: wrong
 4. ...
 
 ----------
+
 ## how to use it:
-...
+obviously you can't use it now because it's under development

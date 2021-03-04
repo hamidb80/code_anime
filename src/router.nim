@@ -2,7 +2,7 @@ import
   asyncdispatch, asynchttpserver,
   ws
 
-import messages, communication
+import communication
 
 proc wsDispatch(req: Request) {.async, gcsafe.} =
   try:

@@ -9,13 +9,7 @@ import tunnel
 
 type
   Message* = tuple[command: string, data: string]
-
-  Mk* = enum # message kinds
-    setFilePath = "setFilePath"
-    sendInput = "sendInput"
-    runCommand = "runCommand"
-    hey = "hey"
-
+ 
 const AppDelay = 10 # per ms
 
 var
@@ -52,8 +46,8 @@ proc sendToAll*(msg: Message){.async.} =
 proc wsChannel_handler*(){.async.} =
   asyncLoop:
     let (ok, msg) = wsCh.tryRecv
-
-    if ok: await sendToAll msg
+    if ok: 
+      await sendToAll msg
 
 # -----------------------------------------
 
@@ -69,8 +63,9 @@ proc msgBridge*(msg: string) =
 proc termChannel_handler*(){.thread.} =
   var term: Option[InteractableTerminal]
 
-  template sayErr=
-    wsCh.send ("error", getCurrentExceptionMsg())
+  template initTerminal(it: InteractableTerminal)=
+    term = some it
+    term.get.onStdout = proc(s: string) = wsCh.send ("stdout", s)
 
   threadLoop:
     let (ok, msg) = termCh.tryRecv
@@ -78,31 +73,35 @@ proc termChannel_handler*(){.thread.} =
     if not ok: continue
     try:
       case msg.command:
-      of $Mk.hey:
+
+      of "hey":
         wsCh.send ("hello", msg.data)
 
-      of $Mk.setFilePath:
+      of "setFilePath":
         compileNimProgram(msg.data, compiledFilePath)
-
         assert fileExists compiledFilePath
 
-        term = some runApp compiledFilePath
-        term.get.onStdout = proc(s: string) = wsCh.send ("stdout", s)
+        initTerminal runApp compiledFilePath
 
-      of $Mk.runCommand:
+      of "runCommand":
         let splitted_command = msg.data.splitWhitespace
         let
           command = splitted_command[0]
           args = splitted_command[1..^1]
 
-        let prc = newTerminal(command, args)
+        initTerminal newTerminal(command, args)
 
-        wsCh.send ("stdout", prc.readLine)
-
-      elif isSome term:
+      elif isSome(term) and not term.get.isDead:
         case msg.command:
-        of $Mk.sendInput:
+        
+        of "sendInput": # TODO: make it work for multiline input
           term.get.writeLine msg.data
 
-      else: sayErr
-    except: sayErr
+        of "terminate":
+          term.get.terminate
+      
+      else:
+        raise newException(ValueError, "The process is dead")
+
+    except:
+      wsCh.send ("Error", getCurrentExceptionMsg())

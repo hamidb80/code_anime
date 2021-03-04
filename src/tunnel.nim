@@ -23,6 +23,9 @@ proc writeLine*(term; line: string) =
   term.stdin.writeLine line
   term.stdin.flush
 
+proc isDead*(term):bool= 
+  term.process.peekExitCode != -1
+
 proc outputLoopWrapper(term; handler: proc(line: string)) =
   try:
     while true:

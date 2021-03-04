@@ -34,7 +34,7 @@ suite "tunnel":
 
 
   test "compile & run .nim":
-    let finalFileName = "./tests/temp/a.out"
+    let finalFileName = "./temp/a.out"
     compileNimProgram("./tests/examples/sample.nim", finalFileName)
 
     term = runApp finalFileName

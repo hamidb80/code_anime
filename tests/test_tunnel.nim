@@ -1,7 +1,8 @@
-import unittest
-import os
-import strutils
-import sugar
+import
+  unittest,
+  os,
+  strutils,
+  sugar
 
 import tunnel
 
@@ -11,10 +12,9 @@ suite "tunnel":
   template runPython(filePath: string) =
     term = newTerminal("python3.8", [filePath])
 
-  setup:
-    discard
-  teardown:
-    term.terminate
+  # for each test
+  setup: discard
+  teardown: term.terminate
 
   test "simple i/o":
     runPython "./tests/scripts/ex.py"

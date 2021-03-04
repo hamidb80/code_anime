@@ -1,6 +1,6 @@
-import 
-  osproc, streams, 
-  threadpool,
+import
+  osproc, streams,
+  threadpool
 
 type
   InteractableTerminal* = object

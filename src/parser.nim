@@ -26,27 +26,25 @@ func evalArgs*(funcname: string, args: seq[string]): string =
 
   new_arg_seq.join ","
 
-# were gonna match all the comments like that #!\w+
+func doReplace(m: RegexMatch): string =
+  var
+    funcname = m.captures[0]
+    args_seq = m.captures[1].split(',').mapIt(it.strip)
+    args_str = ""
+
+  if funcname in Funcs:
+    args_str = evalArgs(funcname, args_seq)
+    funcname = &"debugEcho \"{EchoSigniture}{funcname}::\","
+
+  elif funcname == "sleep":
+    assert args_seq.len == 1
+    args_str = args_seq[0]
+
+  else:
+    raise newException(ValueError, &"'{funcname}' has not defiend")
+
+  fmt"{funcname} {args_str}"
+
 func replaceWithCustomCode*(nimFileContent: string): string =
-
-  func doReplace(m: RegexMatch): string =
-    var
-      funcname = m.captures[0]
-      args_seq = m.captures[1].split(',').mapIt(it.strip)
-      args_str = ""
-
-    if funcname in Funcs:
-      args_str = evalArgs(funcname, args_seq)
-      funcname = &"debugEcho \"{EchoSigniture}{funcname}::\","
-
-    elif funcname == "sleep":
-      assert args_seq.len == 1
-      args_str = args_seq[0]
-
-    else:
-      raise newException(ValueError, &"'{funcname}' has not defiend")
-
-    fmt"{funcname} {args_str}"
-
-
+  # were gonna match all the comments like that #!\w+
   nimFileContent.replace(re"#!(\w+) (.+)", doReplace)

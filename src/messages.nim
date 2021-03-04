@@ -1,25 +1,26 @@
-import 
+import strutils
+
+import
   parser,
   communication
 
-const outFilename = "./temp.nim"
+const outFilename = "./temp.o"
 
 func unpackMsg(msg: string): Message {.inline.} =
   let ci = msg.find(':') # colon index
   assert ci != -1
 
-  (msg[0..<ci], msg[(ci+1)..msg.high])
+  (msg[0..<ci].strip, msg[(ci+1)..msg.high].strip)
 
-proc msgHandler*(msg: string) =
-  let (command, data) = unpackMsg msg
+proc msgBridge*(msg: string) =
+  var (command, data) = unpackMsg msg
 
   case command:
-  of "setFilePath":
+  of $Mk.setFilePath:
     writeFile(outFilename, replaceWithCustomCode readFile data)
-    # termCh.send ("setFilePath", data)
+    data = outFilename
 
-  of "sendInput":
-    # termCh.send ("input", data)
+  of $Mk.sendInput:
     discard
 
   termCh.send (command, data)

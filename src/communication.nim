@@ -1,47 +1,53 @@
-import 
+import
   asyncdispatch,
-  options, 
+  options,
   os,
-  strformat
+  strformat, strutils
 
 import ws
-
 import tunnel
 
 type
   Message* = tuple[command: string, data: string]
 
-var 
+  Mk* = enum # message kinds
+    setFilePath = "setFilePath"
+    sendInput = "sendInput"
+    runCommand = "runCommand"
+    hey = "hey"
+
+const AppDelay = 10 # per ms
+
+var
   termCh*: Channel[Message]
   wsCh*: Channel[Message]
+  wsClients*: seq[WebSocket]
+
+const finalFileName* = "finalizedApp.out"
+
+# ---------- init --------------
 
 termCh.open
 wsCh.open
 
-const AppDelay = 10 # per ms
-
-var wsClients*: seq[WebSocket]
-
-const finalFileName* = "finalizedApp.out"
-
 # ---------------------------------
 
-template asyncLoop*(body:untyped)=
+template asyncLoop*(body: untyped) =
   while true:
     body
     await sleepAsync AppDelay
 
-template threadLoop*(body:untyped)=
+template threadLoop*(body: untyped) =
   while true:
     body
     sleep AppDelay
 
 # ------------------------------------------
 
-func `$`(msg: Message):string =
+func `$`(msg: Message): string =
   fmt"{msg.command}: {msg.data}"
 
-proc sendToAll*(msg: Message){.async.}=
+proc sendToAll*(msg: Message){.async.} =
   for cs in wsClients:
     {.cast(gcsafe).}:
       await cs.send $msg
@@ -49,29 +55,42 @@ proc sendToAll*(msg: Message){.async.}=
 proc wsChannel_handler*(){.async.} =
   asyncLoop:
     let (ok, msg) = wsCh.tryRecv
-      
-    if ok:
-      await sendToAll msg
+
+    if ok: await sendToAll msg
 
 proc termChannel_handler*(){.thread.} =
   var term: Option[InteractableTerminal]
 
+  template sayErr=
+    wsCh.send ("error", getCurrentExceptionMsg())
+
   threadLoop:
     let (command, data) = termCh.recv
 
-    if command == "hey":
-      wsCh.send ("hello", data)
-
-    elif command == "setFilePath":
-      term = some runNimApp compileNimProgram(data, finalFileName)
-      term.get.onStdout = proc(s:string)= wsCh.send ("stdout", s)
-
-    elif isSome term:
+    try:
       case command:
-      
-      of "sendInput":
-        if isSome term:
+      of $Mk.hey:
+        wsCh.send ("hello", data)
+
+      of $Mk.setFilePath:
+        term = some runNimApp compileNimProgram(data, finalFileName)
+        term.get.onStdout = proc(s: string) = wsCh.send ("stdout", s)
+
+      of $Mk.runCommand:
+        let splitted_command = data.splitWhitespace
+        let
+          first = splitted_command[0]
+          others = splitted_command[1..^1]
+
+        let prc = newTerminal(first, others)
+
+        wsCh.send ("output", prc.readLine)
+
+      elif isSome term:
+        case command:
+
+        of $Mk.sendInput:
           term.get.writeLine data
 
-    else:
-      wsCh.send ("error", "400")
+      else: sayErr
+    except: sayErr

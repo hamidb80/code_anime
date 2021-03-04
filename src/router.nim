@@ -1,5 +1,6 @@
 import
-  asyncdispatch, asynchttpserver, ws
+  asyncdispatch, asynchttpserver,
+  ws
 
 import messages, communication
 
@@ -11,14 +12,12 @@ proc wsDispatch(req: Request) {.async, gcsafe.} =
       wsClients.add thisClient
 
       while thisClient.readyState == Open:
-        let msg = await thisClient.receiveStrPacket()
+        let msg = await thisClient.receiveStrPacket
 
-        if msg == "": continue # ws handshake
-        
-        try:
-          msgHandler msg
+        if msg == "": continue # ws handshake :-|
+        try: msgBridge msg
         except:
-          await thisClient.send "ERROR" & $msg.len
+          await thisClient.send "ERROR:" & getCurrentExceptionMsg()
 
   except WebSocketError:
     echo "Socket Closed"

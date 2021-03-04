@@ -14,6 +14,10 @@ proc runServer*(p: int) =
   waitFor server.serve(p.Port, httpDispatch)
 
 proc main =
+  if paramCount() != 1:
+    echo "enter port"
+    return
+
   let port = paramStr(1).parseInt
 
   echo fmt"is running on http://localhost:{port}/"

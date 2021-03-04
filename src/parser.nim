@@ -17,8 +17,8 @@ func evalArgs*(funcname: string, args: seq[string]): string =
 
   case funcname:
   of $fshow:
-    # eval their args, also send args with thier values-json like
-    # ["i", "n"] => """  "i",i,  "n",n """
+    ## eval their args, also send args with thier values-json like
+    ## ["i", "n"] => """  "i",i,  "n",n """
     new_arg_seq = args.mapIt(&"\"{it}:\",{it}")
 
   of $fforget:
@@ -46,5 +46,5 @@ func doReplace(m: RegexMatch): string =
   fmt"{funcname} {args_str}"
 
 func replaceWithCustomCode*(nimFileContent: string): string =
-  # were gonna match all the comments like that #!\w+
+  ## were gonna match all the comments like that #!\w+
   nimFileContent.replace(re"#!(\w+) (.+)", doReplace)

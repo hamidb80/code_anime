@@ -12,7 +12,6 @@ suite "tunnel":
   template runPython(filePath: string) =
     term = newTerminal("python3.8", [filePath])
 
-  # for each test
   setup: discard
   teardown: term.terminate
 

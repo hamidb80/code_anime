@@ -16,12 +16,11 @@ proc runServer*(p: int) =
 proc main =
   if paramCount() != 1:
     echo "enter port"
-    return
 
-  let port = paramStr(1).parseInt
-
-  echo fmt"is running on http://localhost:{port}/"
-  runServer(port)
+  else:
+    let port = paramStr(1).parseInt
+    echo fmt"is running on http://localhost:{port}/"
+    runServer(port)
 
 if isMainModule:
   main()

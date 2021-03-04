@@ -9,13 +9,7 @@ import parser
 #     if not(line =~ re"\s+\n"):
 #       result.add line
 
-
 suite "parser":
-  setup:
-    discard
-  teardown:
-    discard
-
   test "evalArgs::show":
     check evalArgs("show", @["name", "i"]) == "\"name:\",name,\"i:\",i"
 

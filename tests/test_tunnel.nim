@@ -22,6 +22,7 @@ suite "tunnel":
     term.writeLine "hamid"
     check term.readLine.strip == "hello hamid"
 
+
   test "stdout event handler":
     runPython "./tests/scripts/loop.py"
 
@@ -30,3 +31,11 @@ suite "tunnel":
 
     sleep 500
     check outs == @["0", "1", "2", "3"]
+
+
+  test "compile & run .nim":
+    let finalFileName = "./tests/temp/a.out"
+    compileNimProgram("./tests/examples/sample.nim", finalFileName)
+
+    term = runApp finalFileName
+    check term.readAll.strip == "sample"

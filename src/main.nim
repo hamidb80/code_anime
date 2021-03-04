@@ -20,7 +20,7 @@ proc main =
   else:
     let port = paramStr(1).parseInt
     echo fmt"is running on http://localhost:{port}/"
-    runServer(port)
+    runServer port
 
 if isMainModule:
   main()

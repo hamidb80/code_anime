@@ -1,6 +1,7 @@
 import
   osproc, streams,
-  threadpool
+  threadpool,
+  strutils
 
 type
   InteractableTerminal* = object
@@ -14,6 +15,9 @@ using term: InteractableTerminal
 
 proc readLine*(term): string =
   term.stdout.readLine
+  
+proc readAll*(term): string =
+  term.stdout.readAll
 
 proc writeLine*(term; line: string) =
   term.stdin.writeLine line
@@ -45,11 +49,12 @@ proc newTerminal*(command: string; options: openArray[string] = []): Interactabl
     stdin: p.inputStream,
     stdout: p.outputStream)
 
-proc compileNimProgram*(nimFilePath: string; outputFilePath: string): string =
-  let p = newProcess("nim", ["c", nimFilePath, "-o", outputFilePath])
-
-  discard waitForExit p # TODO check for error
-  outputFilePath
+proc compileNimProgram*(nimFilePath: string; outputFilePath: string)=
+  let p = newProcess("nim", ["c", "-o:"&outputFilePath, nimFilePath])
+  discard waitForExit p
+  
+  if p.peekExitCode != 0:
+    raise newException(ValueError, "error during compilation of " & nimFilePath)
 
 proc runApp*(runnableFilePath: string): InteractableTerminal {.inline.} =
-  newTerminal("./" & runnableFilePath)
+  newTerminal((if runnableFilePath.startsWith "./": "" else: "./") & runnableFilePath)

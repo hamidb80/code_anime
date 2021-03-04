@@ -2,7 +2,7 @@ import
   asyncdispatch,
   options,
   os,
-  strformat, strutils
+  strutils
 
 import ws
 import tunnel
@@ -23,7 +23,7 @@ var
   wsCh*: Channel[Message]
   wsClients*: seq[WebSocket]
 
-const finalFileName* = "finalizedApp.out"
+const compiledFilePath* = "./temp/finalizedApp.out"
 
 # ---------- init --------------
 
@@ -44,9 +44,6 @@ template threadLoop*(body: untyped) =
 
 # ------------------------------------------
 
-func `$`(msg: Message): string =
-  fmt"{msg.command}: {msg.data}"
-
 proc sendToAll*(msg: Message){.async.} =
   for cs in wsClients:
     {.cast(gcsafe).}:
@@ -57,6 +54,8 @@ proc wsChannel_handler*(){.async.} =
     let (ok, msg) = wsCh.tryRecv
 
     if ok: await sendToAll msg
+
+# -----------------------------------------
 
 func unpackMsg(msg: string): Message {.inline.} =
   let ci = msg.find ':' # colon index
@@ -74,32 +73,36 @@ proc termChannel_handler*(){.thread.} =
     wsCh.send ("error", getCurrentExceptionMsg())
 
   threadLoop:
-    let (command, data) = termCh.recv
+    let (ok, msg) = termCh.tryRecv
 
+    if not ok: continue
     try:
-      case command:
+      case msg.command:
       of $Mk.hey:
-        wsCh.send ("hello", data)
+        wsCh.send ("hello", msg.data)
 
       of $Mk.setFilePath:
-        term = some runApp compileNimProgram(data, finalFileName)
+        compileNimProgram(msg.data, compiledFilePath)
+
+        assert fileExists compiledFilePath
+
+        term = some runApp compiledFilePath
         term.get.onStdout = proc(s: string) = wsCh.send ("stdout", s)
 
       of $Mk.runCommand:
-        let splitted_command = data.splitWhitespace
+        let splitted_command = msg.data.splitWhitespace
         let
-          first = splitted_command[0]
-          others = splitted_command[1..^1]
+          command = splitted_command[0]
+          args = splitted_command[1..^1]
 
-        let prc = newTerminal(first, others)
+        let prc = newTerminal(command, args)
 
-        wsCh.send ("output", prc.readLine)
+        wsCh.send ("stdout", prc.readLine)
 
       elif isSome term:
-        case command:
-
+        case msg.command:
         of $Mk.sendInput:
-          term.get.writeLine data
+          term.get.writeLine msg.data
 
       else: sayErr
     except: sayErr

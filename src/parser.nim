@@ -3,8 +3,10 @@ import strformat, strutils, sequtils
 import shared
 
 type Funcs = enum
-  fshow = "show"
+  fnew = "new"
   fforget = "forget"
+  fshow = "show"
+  fsleep = "sleep"
 func contains(en: type Funcs, str: string): bool =
   for n in low(en) .. high(en):
     if $n == str:
@@ -18,7 +20,6 @@ func evalArgs*(funcname: string, args: seq[string]): string =
     ## eval their args, also send args with thier values-json like
     ## ["i", "n"] => """  "i",i,  "n",n """
     new_arg_seq = args.mapIt(&"\"{it}:\",{it}")
-
   of $fforget:
     new_arg_seq = args.mapIt(&"\"{it}\"")
 
@@ -29,14 +30,12 @@ func doReplace(m: RegexMatch): string =
     args_seq = m.captures[1].split(',').mapIt(it.strip)
     args_str = ""
 
-  if funcname in Funcs:
-    args_str = evalArgs(funcname, args_seq)
-    funcname = &"debugEcho \"{EchoSigniture}{funcname}::\","
-
-  elif funcname == "sleep":
+  if funcname == $fsleep:
     assert args_seq.len == 1
     args_str = args_seq[0]
-
+  elif funcname in Funcs:
+    args_str = evalArgs(funcname, args_seq)
+    funcname = &"debugEcho \"{EchoSigniture}{funcname}::\","
   else:
     raise newException(ValueError, &"'{funcname}' has not defiend")
 

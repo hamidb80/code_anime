@@ -1,12 +1,10 @@
 import nre except toSeq
 import strformat, strutils, sequtils
-
-import consts
+import shared
 
 type Funcs = enum
   fshow = "show"
   fforget = "forget"
-
 func contains(en: type Funcs, str: string): bool =
   for n in low(en) .. high(en):
     if $n == str:
@@ -25,7 +23,6 @@ func evalArgs*(funcname: string, args: seq[string]): string =
     new_arg_seq = args.mapIt(&"\"{it}\"")
 
   new_arg_seq.join ","
-
 func doReplace(m: RegexMatch): string =
   var
     funcname = m.captures[0]
@@ -44,7 +41,6 @@ func doReplace(m: RegexMatch): string =
     raise newException(ValueError, &"'{funcname}' has not defiend")
 
   fmt"{funcname} {args_str}"
-
 func replaceWithCustomCode*(nimFileContent: string): string =
   ## were gonna match all the comments like that #!\w+
   nimFileContent.replace(re"#!(\w+) (.+)", doReplace)

@@ -4,7 +4,7 @@ import
   os,
   strutils
 import ws
-import consts,  tunnel
+import shared,  tunnel
 
 type
   Message* = tuple[command: string, data: string]

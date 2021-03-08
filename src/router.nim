@@ -1,7 +1,6 @@
 import
   asyncdispatch, asynchttpserver,
   ws
-
 import communication
 
 proc wsDispatch(req: Request) {.async, gcsafe.} =
@@ -21,8 +20,6 @@ proc wsDispatch(req: Request) {.async, gcsafe.} =
 
   except WebSocketError:
     echo "Socket Closed"
-
-
 proc httpDispatch*(req: Request): Future[void] {.async, gcsafe.} =
   if req.url.path == "/ws":
     await wsDispatch req

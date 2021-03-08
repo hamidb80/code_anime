@@ -2,17 +2,16 @@ import
   asyncdispatch, asynchttpserver, threadpool,
   strutils, strformat,
   os
-
 import router, communication
 
-proc runServer*(p: int) =
+proc runServer*(port: int) =
   let server = newAsyncHttpServer()
 
   spawn termChannelHandler()
   asyncCheck wsChannelHandler()
-  waitFor server.serve(p.Port, httpDispatch)
+  waitFor server.serve(port.Port, httpDispatch)
 
-proc main =
+if isMainModule:
   if paramCount() != 1:
     echo "enter port"
 
@@ -20,6 +19,3 @@ proc main =
     let port = paramStr(1).parseInt
     echo fmt"is running on http://localhost:{port}/"
     runServer port
-
-if isMainModule:
-  main()

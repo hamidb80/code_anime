@@ -11,6 +11,8 @@ type
     # stderr: Stream
     onStdout: proc(line: string): void
 
+# ------------------ InteractableTerminal -----------------
+
 using term: InteractableTerminal
 
 proc readLine*(term): string =
@@ -20,8 +22,6 @@ proc readAll*(term): string =
 proc writeLine*(term; line: string) =
   term.stdin.writeLine line
   term.stdin.flush
-proc isDead*(term): bool =
-  term.process.peekExitCode != -1
 proc outputLoopWrapper(term; handler: proc(line: string)) =
   try:
     while true:
@@ -30,10 +30,12 @@ proc outputLoopWrapper(term; handler: proc(line: string)) =
   except: discard
 proc `onStdout=`*(term; handler: proc(line: string)) =
   spawn outputLoopWrapper(term, handler)
+proc isDead*(term): bool =
+  term.process.peekExitCode != -1
 proc terminate*(term) =
   term.process.terminate
 
-# --------------------------------------------------------
+# ---------------- other functionalities --------------------------
 
 proc newProcess(command: string; options: openArray[string] = []): Process {.inline.} =
   startProcess(command, "", options, nil, {poUsePath, poInteractive})

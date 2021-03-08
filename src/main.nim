@@ -13,9 +13,9 @@ proc runServer*(port: int) =
 
 if isMainModule:
   if paramCount() != 1:
-    echo "enter port"
+    echo "enter port as an argument"
 
   else:
     let port = paramStr(1).parseInt
-    echo fmt"is running on http://localhost:{port}/"
+    echo fmt"running on http://localhost:{port}/"
     runServer port

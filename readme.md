@@ -1,25 +1,26 @@
 # Code Anime!
-convert your code into visual algorigthm
+convert your code into visual animated elements 
 
-## alert
+## Alert
 this project is under developments
 
-## idea / algorithm:
+## Idea/Algorithm:
 TODO: use macros
 
 ----------
-## app diagram:
+## App Structure:
 ![handlers](diagram.png)
-
-----------
-
-## keywords:
-1. **!show** var1 [, var2, var3]
-2. **!sleep** (time in ms)
-3. **!forget** var1 [, var2, var3]
-4. ...
 
 ----------
 
 ## how to use it:
 obviously you can't use it now because it's under development
+
+----------
+
+## Macros/Templates:
+1. **show** var1 [, var2, var3]
+2. **sleep** (time in ms)
+3. **forget** var1 [, var2, var3]
+4. **track** var1 [, var2, var3]
+5. ...

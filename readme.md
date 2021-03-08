@@ -25,6 +25,10 @@ then we replace these lines (#!show, #!sleep, ...)s, with our code
 we compile new code, 
 
 ----------
+## app diagram:
+![handlers](diagram.png)
+
+----------
 ## common mistakes:
 1. **the comments must be aligned with the code**
 

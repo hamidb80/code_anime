@@ -15,7 +15,7 @@ using term: InteractableTerminal
 
 proc readLine*(term): string =
   term.stdout.readLine
-  
+
 proc readAll*(term): string =
   term.stdout.readAll
 
@@ -23,14 +23,14 @@ proc writeLine*(term; line: string) =
   term.stdin.writeLine line
   term.stdin.flush
 
-proc isDead*(term):bool= 
+proc isDead*(term): bool =
   term.process.peekExitCode != -1
 
 proc outputLoopWrapper(term; handler: proc(line: string)) =
   try:
     while true:
       handler term.readLine
-  
+
   except: discard
 
 proc `onStdout=`*(term; handler: proc(line: string)) =
@@ -41,7 +41,7 @@ proc terminate*(term) =
 
 # --------------------------------------------------------
 
-proc newProcess*(command: string; options: openArray[string] = []): Process {.inline.} =
+proc newProcess(command: string; options: openArray[string] = []): Process {.inline.} =
   startProcess(command, "", options, nil, {poUsePath, poInteractive})
 
 proc newTerminal*(command: string; options: openArray[string] = []): InteractableTerminal =
@@ -52,10 +52,10 @@ proc newTerminal*(command: string; options: openArray[string] = []): Interactabl
     stdin: p.inputStream,
     stdout: p.outputStream)
 
-proc compileNimProgram*(nimFilePath: string; outputFilePath: string)=
+proc compileNimProgram*(nimFilePath: string; outputFilePath: string) =
   let p = newProcess("nim", ["c", "-o:"&outputFilePath, nimFilePath])
   discard waitForExit p
-  
+
   if p.peekExitCode != 0:
     raise newException(ValueError, "error during compilation of " & nimFilePath)
 

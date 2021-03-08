@@ -5,12 +5,11 @@ import
 
 import router, communication
 
-
 proc runServer*(p: int) =
   let server = newAsyncHttpServer()
 
-  spawn termChannel_handler()
-  asyncCheck wsChannel_handler()
+  spawn termChannelHandler()
+  asyncCheck wsChannelHandler()
   waitFor server.serve(p.Port, httpDispatch)
 
 proc main =

@@ -1,7 +1,7 @@
 import nre except toSeq
 import strformat, strutils, sequtils
 
-const EchoSigniture = "::CODE_ANIME::"
+import consts
 
 type Funcs = enum
   fshow = "show"

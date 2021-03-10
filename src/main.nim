@@ -9,6 +9,7 @@ proc runServer*(port: int) =
 
   spawn termChannelHandler()
   asyncCheck wsChannelHandler()
+
   waitFor server.serve(port.Port, httpDispatch)
 
 if isMainModule:

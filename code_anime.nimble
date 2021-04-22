@@ -11,3 +11,16 @@ srcDir = "src"
 
 requires "nim >= 1.4.2"
 requires "ws >= 0.4.3"
+
+# ----------------- tasls --------------------
+import os, strutils
+
+task start, "starts the app":
+  let args = commandLineParams()
+
+  try:
+    let port = parseInt args[^1]
+    exec "nim -d:ssl r src/main.nim " & $port
+  
+  except:
+    echo "enter port"

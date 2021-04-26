@@ -11,7 +11,9 @@ type
 
 const
   AppDelay = 10 # per ms
-  compiledFilePath* = "./temp/finalizedApp.out"
+  compiledFilePath* = "./temp/finalizedApp.out" 
+  # we don't need to complie file
+  # th ecompiled file is enought
 
 var
   termCh*: Channel[Message]
